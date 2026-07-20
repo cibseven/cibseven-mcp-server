@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- Supplies distributionManagement (artifacts.cibseven.org) for the Jenkins
+       pipeline's deploy stage and the shared release configuration. -->
+  <parent>
+    <groupId>org.cibseven</groupId>
+    <artifactId>release-parent</artifactId>
+    <version>1.4.0</version>
+    <relativePath/>
+  </parent>
+
+  <groupId>org.cibseven.mcp</groupId>
+  <artifactId>cibseven-mcp-server</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+
+  <name>CIB seven MCP Server</name>
+  <description>Ready-to-run Spring Boot MCP server for CIB seven: hosts the cibseven-mcp-restapi library exposing an OpenAPI-described REST API (such as the CIB seven engine REST API) as MCP tools, with OAuth2 protection and pluggable outbound authentication.</description>
+  <url>https://github.com/cibseven/cibseven-mcp-server</url>
+  <inceptionYear>2025</inceptionYear>
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <organization>
+    <name>CIB software GmbH</name>
+    <url>https://www.cib.de</url>
+  </organization>
+
+  <developers>
+    <developer>
+      <organization>CIB software GmbH</organization>
+      <organizationUrl>https://www.cib.de</organizationUrl>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:https://github.com/cibseven/cibseven-mcp-server.git</connection>
+    <developerConnection>scm:git:git@github.com:cibseven/cibseven-mcp-server.git</developerConnection>
+    <url>https://github.com/cibseven/cibseven-mcp-server</url>
+  </scm>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <spring-boot.version>4.0.7</spring-boot.version>
+    <logback.version>1.5.38</logback.version>
+
+    <!-- release-parent's compiler configuration reads version.java -->
+    <version.java>17</version.java>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring-boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <!-- Override the Spring Boot BOM's managed Logback to the latest 1.5.x.
+           Applied here (not just in the library) because dependencyManagement
+           is not transitive, so this runtime app would otherwise ship the
+           BOM default. Local entries take precedence over imported BOMs. -->
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>${logback.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-core</artifactId>
+        <version>${logback.version}</version>
+      </dependency>
+
+      <!-- Pin transitive versions to resolve DependencyConvergence conflicts.
+           (dependencyManagement is not transitive, so the library's own pin
+           does not carry over to this consumer.) -->
+      <!-- caffeine wants 2.49.0, guava wants 2.36.0 (both via the restapi
+           library); pin to the newer. -->
+      <dependency>
+        <groupId>com.google.errorprone</groupId>
+        <artifactId>error_prone_annotations</artifactId>
+        <version>2.49.0</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+
+    <!-- The MCP server library: OpenAPI -> MCP tools, MCP endpoint OAuth2
+         protection, and the engine-rest auth strategies (passthrough / minted-jwt
+         with claim / graph / static identity resolution). -->
+    <dependency>
+      <groupId>org.cibseven.mcp</groupId>
+      <artifactId>cibseven-mcp-restapi</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <!-- Supplies the Spring Security runtime the library declares as provided. -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+
+    <!-- Inbound token validation:
+         spring.security.oauth2.resourceserver.jwt.issuer-uri -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+    </dependency>
+
+    <!-- client_credentials Graph client used by the graph identity resolver. -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-oauth2-client</artifactId>
+    </dependency>
+
+    <!-- Health probes for Docker HEALTHCHECK and Kubernetes liveness/readiness. -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- swagger-parser needs commons-io only when loading a specification
+         from a file, which only the tests do. -->
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.22.0</version>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <plugins>
+
+      <!-- Fail the build when a dependency resolves to divergent versions
+           across the transitive tree. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>3.6.3</version>
+        <executions>
+          <execution>
+            <id>enforce-dependency-convergence</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <dependencyConvergence/>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring-boot.version}</version>
+        <configuration>
+          <layout>ZIP</layout>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Coverage report consumed by the Jenkins pipeline
+           (recordCoverage) and SonarQube. -->
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.8.15</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+
+          <execution>
+            <id>report</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+    </plugins>
+  </build>
+
+  <repositories>
+    <repository>
+      <id>mvn-cibseven-snapshots</id>
+      <name>CIB seven Snapshots repository</name>
+      <url>https://artifacts.cibseven.org/repository/snapshots</url>
+    </repository>
+  </repositories>
+
+</project>

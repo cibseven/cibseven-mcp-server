@@ -1,0 +1,6 @@
+{{/*
+All Kubernetes objects for this chart are produced by the shared CIB
+common-tpl-lib template library, driven entirely by values.yaml.
+You can inline the library's contents here if further customization is needed.
+*/}}
+{{ include "common-tpl-lib-2.7.0.objects" . }}

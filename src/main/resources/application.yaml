@@ -1,0 +1,103 @@
+# Default configuration for local development.
+# Deployment-specific values should be supplied through environment variables
+# or an external application.yaml via SPRING_CONFIG_ADDITIONAL_LOCATION.
+spring:
+  ai:
+    mcp:
+      server:
+        enabled: true
+        protocol: STATELESS
+        name: cibseven-mcp-server
+        version: 1.0.0
+        type: SYNC
+        instructions: "CIB seven MCP server exposing the Engine REST API and business tools to execute CIB seven processes."
+
+        # This server exposes MCP tools only.
+        capabilities:
+          tool: true
+          resource: false
+          prompt: false
+          completion: false
+
+        # Spring AI 2.0.0 uses the streamable-http property group for the
+        # endpoint in both STREAMABLE and STATELESS modes.
+        streamable-http:
+          mcp-endpoint: /mcp
+
+  # OAuth2 protection of the MCP endpoint.
+  #
+  # For an OAuth2-protected deployment, provide:
+  #   SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI
+  #
+  # Example:
+  # security:
+  #   oauth2:
+  #     resourceserver:
+  #       jwt:
+  #         issuer-uri: ${MCP_OAUTH_ISSUER_URI}
+  #
+  # Optional client registration for the Graph identity resolver used by
+  # minted-jwt mode:
+  #     client:
+  #       registration:
+  #         graph:
+  #           client-id: ${GRAPH_CLIENT_ID}
+  #           client-secret: ${GRAPH_CLIENT_SECRET}
+  #           authorization-grant-type: client_credentials
+  #           scope: https://graph.microsoft.com/.default
+  #       provider:
+  #         graph:
+  #           token-uri: ${GRAPH_TOKEN_URI}
+
+cibseven:
+  mcp:
+    restapi-mcp: true
+
+    # Space- or comma-separated scopes advertised through RFC 9728 Protected
+    # Resource Metadata. The Java configuration ignores this value when blank.
+    #
+    # Example:
+    #   openid offline_access
+    #   https://cibseven-showcase.cib.de/mcp/access_as_user
+    oauth2:
+      scopes-supported: ${CIBSEVEN_MCP_OAUTH2_SCOPES_SUPPORTED:}
+
+    # Outbound authentication towards engine-rest:
+    #   passthrough (default) - forward the validated inbound bearer token
+    #   minted-jwt           - create a short-lived CIB seven HMAC JWT
+    engine-rest:
+      auth: ${ENGINE_REST_AUTH:passthrough}
+
+      # Used only when auth=minted-jwt:
+      # minted-jwt:
+      #   resolver: claim
+      #   ttl-seconds: 60
+
+  # The OpenAPI document exposed as MCP tools. When omitted, the library uses
+  # its configured/default CIB seven engine REST specification.
+  #
+  # openapi:
+  #   url: ${OPENAPI_URL}
+
+  webclient:
+    engineRest:
+      url: ${ENGINE_REST_URL:http://localhost:8080}
+
+    authentication:
+      # Base64-encoded HMAC secret shared with engine-rest.
+      # Required only when ENGINE_REST_AUTH=minted-jwt.
+      jwtSecret: ${ENGINE_REST_JWT_SECRET:}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+logging:
+  level:
+    org.cibseven.mcp: INFO

@@ -1,0 +1,51 @@
+name: Build and publish
+on: [pull_request, push, workflow_dispatch]
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # Explicit cache instead of setup-java's `cache: maven`: the built-in
+      # maven cache aborts its save step with "Path Validation Error ... do(es)
+      # not exist" even though ~/.m2/repository is populated. This step points
+      # at a path that always exists after the build and runs on Node 24.
+      - name: Cache Maven repository
+        uses: actions/cache@v6
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+      - name: Build and test
+        # -U: force-check the remote repo for newer SNAPSHOTs. Without it, setup-java's
+        # Maven cache (restored from a previous run, keyed on pom.xml's hash — unchanged
+        # when only an upstream SNAPSHOT version is republished) can make Maven reuse a
+        # stale cached cibseven-mcp-restapi jar instead of the new one.
+        run: mvn -B -U verify
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+      - name: Expose GitHub Runtime
+        uses: actions/github-script@v9
+        with:
+          script: |
+            Object.keys(process.env).forEach(function (key) {
+              if (key.startsWith('ACTIONS_')) {
+                core.info(`${key}=${process.env[key]}`);
+                core.exportVariable(key, process.env[key]);
+              }
+            });
+      # Build + push the image. Only publishes from main (or a manual
+      # workflow_dispatch); on pull requests the job still builds and tests above.
+      - name: Publish images
+        if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
+        run: ./release.sh
+        env:
+          JAVA: 17
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}

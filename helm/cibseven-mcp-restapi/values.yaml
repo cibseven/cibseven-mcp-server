@@ -1,0 +1,198 @@
+# Default values for cibseven-mcp-restapi.
+# This is a YAML-formatted file.
+#
+# This chart deploys the CIB seven MCP server (image
+# cibseven/cibseven-mcp-restapi): a Spring Boot application hosting the
+# cibseven-mcp-restapi library, which exposes an external CIB seven engine REST
+# API as MCP tools. The engine itself is NOT part of this deployment — point
+# cibseven.webclient.engineRest.url at it.
+#
+# All Kubernetes objects are rendered by the shared common-tpl-lib template
+# library (see templates/objects.yaml), exactly like the cibseven-webclient
+# chart.
+
+# ---------------------------------------------------------------------------
+# Configuration shared by multiple CIB (seven) charts.
+# ---------------------------------------------------------------------------
+global:
+  image:
+    # Docker Hub organisation the image is published under.
+    repository: cibseven
+    # Prefer immutable image tags. Override this per environment when needed.
+    pullPolicy: IfNotPresent
+
+  probes:
+    enabled: true
+
+  resources:
+    enabled: false
+
+# ---------------------------------------------------------------------------
+# Spring Boot deployment overrides.
+#
+# This map is rendered into /opt/cib/conf/application.yaml and loaded through
+# SPRING_CONFIG_ADDITIONAL_LOCATION. Additional Spring configuration has higher
+# precedence than the application.yaml packaged in the image.
+#
+# Therefore, do not duplicate stable application defaults here, such as:
+#   spring.ai.mcp.server.protocol
+#   spring.ai.mcp.server.name
+#   spring.ai.mcp.server.type
+#   spring.ai.mcp.server.streamable-http.mcp-endpoint
+#   cibseven.mcp.restapi-mcp
+#
+# Those values belong to the application's packaged application.yaml. Add only
+# settings that differ by deployment/environment.
+#
+# Typical production additions:
+#   spring.security.oauth2.resourceserver.jwt.issuer-uri
+#   spring.security.oauth2.client.*
+#   cibseven.mcp.oauth2.scopes-supported
+#   cibseven.mcp.engine-rest.auth
+#   cibseven.mcp.engine-rest.minted-jwt.resolver
+#
+# Do not commit literal credentials to values files. Supply credentials through
+# secrets.env or the environment's external secret management.
+# ---------------------------------------------------------------------------
+application:
+  cibseven:
+    webclient:
+      # Base URL of the external CIB seven engine REST API.
+      # Override this in each environment-specific values file.
+      engineRest:
+        url: http://localhost:8080
+
+# ---------------------------------------------------------------------------
+# Environment injected as a ConfigMap (non-sensitive).
+# ---------------------------------------------------------------------------
+configmaps:
+  env:
+    # Load the mounted application.yaml in addition to the configuration
+    # packaged in the image.
+    SPRING_CONFIG_ADDITIONAL_LOCATION: "optional:file:/opt/cib/conf/application.yaml"
+  files: {}
+
+# ---------------------------------------------------------------------------
+# Environment / files injected as a Secret (sensitive).
+#
+# The application override map is rendered here so deployment-specific OAuth
+# configuration can be supplied without baking it into the image.
+# Put sensitive environment variables such as ENGINE_REST_JWT_SECRET and
+# GRAPH_CLIENT_SECRET under secrets.env in an environment-specific values file.
+# ---------------------------------------------------------------------------
+secrets:
+  env: {}
+  files:
+    application.yaml:
+      path: /opt/cib/conf/application.yaml
+      value: |-
+        {{ .Values.application | toYaml | toString }}
+
+volumes: {}
+
+initContainers: {}
+
+# A single replica is a lightweight chart default. Stateless MCP supports
+# multiple replicas without sticky sessions; use replicaCount: 2 or more in
+# the production environment values.
+replicaCount: 1
+
+image:
+  repository: "{{ .Values.global.image.repository }}"
+  name: cibseven-mcp-restapi
+  pullPolicy: "{{ .Values.global.image.pullPolicy }}"
+  # Defaults to .Chart.AppVersion. Override to pin another tag.
+  tag: ""
+
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
+
+# ---------------------------------------------------------------------------
+# Hardened pod / container security context.
+# ---------------------------------------------------------------------------
+podSecurityContext:
+  fsGroup: 1000
+
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+  runAsNonRoot: true
+  runAsUser: 1000
+  allowPrivilegeEscalation: false
+
+service:
+  ports:
+    http:
+      port: 8080
+      contexts:
+        - /
+        - /mcp
+
+# HTTP health probes against Spring Boot Actuator.
+probes:
+  enabled: "{{ .Values.global.probes.enabled }}"
+
+  startupProbe:
+    httpGet:
+      path: /actuator/health/readiness
+      port: http
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 40
+
+  readinessProbe:
+    httpGet:
+      path: /actuator/health/readiness
+      port: http
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+  livenessProbe:
+    httpGet:
+      path: /actuator/health/liveness
+      port: http
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 5
+    failureThreshold: 6
+
+ingress:
+  enabled: false
+
+resources:
+  enabled: "{{ .Values.global.resources.enabled }}"
+  limits:
+    cpu: 1000m
+    memory: 1024Mi
+  requests:
+    cpu: 250m
+    memory: 512Mi
+
+autoscaling:
+  enabled: false
+
+# Keep disabled for the single-replica default. For a production deployment
+# with two or more replicas, enable a PodDisruptionBudget in the environment
+# values using the fields supported by common-tpl-lib.
+podDisruptionBudget:
+  enabled: false
+
+serviceMonitor:
+  enabled: false
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

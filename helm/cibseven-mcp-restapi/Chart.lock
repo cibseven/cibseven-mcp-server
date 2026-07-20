@@ -1,0 +1,6 @@
+dependencies:
+- name: common-tpl-lib
+  repository: oci://harbor.cib.de/charts
+  version: 2.7.0
+digest: sha256:d4d14c54a14d3823606150bc8fc1bc94ae9da8d9d30b67279a683a95d02f559a
+generated: "2025-11-14T15:30:41.786812794+01:00"

@@ -1,0 +1,4 @@
+{{/*
+Standard release notes from the shared CIB common-tpl-lib template library.
+*/}}
+{{ include "common-tpl-lib-2.7.0.notes" . }}

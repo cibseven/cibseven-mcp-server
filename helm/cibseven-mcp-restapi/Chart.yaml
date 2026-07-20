@@ -1,0 +1,36 @@
+apiVersion: v2
+# The chart keeps the historical name "cibseven-mcp-restapi" (matching the
+# published image cibseven/cibseven-mcp-restapi) so existing deployments that
+# pin this chart by name keep working. The repository is cibseven-mcp-server.
+name: cibseven-mcp-restapi
+description: >-
+  Helm chart for the CIB seven MCP server: a Spring Boot application hosting the
+  cibseven-mcp-restapi library, which exposes the CIB seven engine REST API as
+  MCP tools (image cibseven/cibseven-mcp-restapi).
+home: https://github.com/cibseven/cibseven-mcp-server
+sources:
+  - https://github.com/cibseven/cibseven-mcp-server.git
+
+maintainers:
+  - name: CIB software GmbH
+    email: support@cib.de
+    url: https://www.cib.de/
+
+keywords:
+  - cibseven-mcp-restapi
+  - cibseven-mcp
+  - CIB seven
+  - MCP
+
+type: application
+
+# Chart version. Bump on every chart change.
+version: 0.2.0
+
+# Version of the application (docker image tag) this chart deploys by default.
+appVersion: "1.0.0-SNAPSHOT"
+
+dependencies:
+  - name: common-tpl-lib
+    version: 2.7.0
+    repository: oci://harbor.cib.de/charts
