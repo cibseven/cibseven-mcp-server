@@ -16,7 +16,7 @@
 
   <groupId>org.cibseven.mcp</groupId>
   <artifactId>cibseven-mcp-server</artifactId>
-  <version>0.0.1</version>
+  <version>1.0.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>CIB seven MCP Server</name>
