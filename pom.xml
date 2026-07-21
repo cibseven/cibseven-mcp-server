@@ -16,7 +16,7 @@
 
   <groupId>org.cibseven.mcp</groupId>
   <artifactId>cibseven-mcp-server</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>0.0.1</version>
   <packaging>jar</packaging>
 
   <name>CIB seven MCP Server</name>
@@ -120,7 +120,7 @@
     <dependency>
       <groupId>org.cibseven.mcp</groupId>
       <artifactId>cibseven-mcp-restapi</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>0.0.1</version>
     </dependency>
 
     <dependency>
