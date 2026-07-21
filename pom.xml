@@ -144,6 +144,15 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- Stubs engine-rest /authorization/check in EngineAuthorizationServiceTest.
+         Pinned to match the okhttp 4.12.0 the library brings transitively. -->
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>mockwebserver</artifactId>
+      <version>4.12.0</version>
+      <scope>test</scope>
+    </dependency>
+
     <!-- swagger-parser needs commons-io only when loading a specification
          from a file, which only the tests do. -->
     <dependency>
