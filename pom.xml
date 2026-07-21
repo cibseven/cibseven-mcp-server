@@ -14,7 +14,7 @@
 
   <groupId>org.cibseven.mcp</groupId>
   <artifactId>cibseven-mcp-server</artifactId>
-  <version>0.0.1</version>
+  <version>0.0.2-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>CIB seven MCP Server</name>
@@ -46,7 +46,7 @@
     <connection>scm:git:https://github.com/cibseven/cibseven-mcp-server.git</connection>
     <developerConnection>scm:git:https://github.com/cibseven/cibseven-mcp-server.git</developerConnection>
     <url>https://github.com/cibseven/cibseven-mcp-server</url>
-    <tag>0.0.1</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <properties>
