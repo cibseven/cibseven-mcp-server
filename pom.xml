@@ -59,11 +59,15 @@
     <version.java>17</version.java>
 
     <jib-maven-plugin.version>3.5.2</jib-maven-plugin.version>
-    <!-- Container base image. Public (eclipse-temurin) on purpose: jib bakes the base
-         image's layers into the published image, and this is an open-source project whose
-         image is published to Docker Hub and must be buildable outside CIB's network. The
-         Java version only needs to be >= version.java. -->
-    <jib.from.image>eclipse-temurin:17-jre</jib.from.image>
+    <!-- Container base image. Public on purpose: jib bakes the base image's layers into
+         the published image, and this open-source project's image is published to Docker
+         Hub and must be buildable outside CIB's network. Amazon Corretto on Alpine: 0 known
+         OS CVEs at time of writing, actively maintained by AWS, and far cleaner than the
+         Debian-based JRE and distroless options. Corretto 21 runs the Java 17 bytecode fine
+         (the base Java only needs to be at least version.java). The floating tag (no digest)
+         is intentional: each build pulls the latest patched Alpine/Corretto, keeping the CVE
+         surface low without a digest bump (at the cost of byte-for-byte reproducibility). -->
+    <jib.from.image>amazoncorretto:21-alpine</jib.from.image>
     <!-- Default push target: the internal Harbor registry (used by the Jenkins
          CREATE_DOCKER_IMAGE stage). The public GitHub Actions build overrides this with
          -Djib.to.image=docker.io/cibseven/cibseven-mcp-restapi. -->
