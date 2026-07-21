@@ -66,11 +66,13 @@ details):
 
 ## Docker image
 
-The [Dockerfile](Dockerfile) ships a jlink-trimmed JRE on Alpine (~70 MB runtime), runs
-as a non-root user under `tini`, sets `-XX:MaxRAMPercentage=75.0`, and defines a
-`HEALTHCHECK` against the actuator. The jar is built outside the image (`mvn package`)
-and published by the [GitHub Actions workflow](.github/workflows/build-and-publish.yml)
-as `cibseven/cibseven-mcp-restapi`.
+The image is built with [jib](https://github.com/GoogleContainerTools/jib) — no
+Dockerfile — straight from the compiled classes on top of a public `eclipse-temurin:17-jre`
+base, running as a non-root user with `-XX:MaxRAMPercentage=75.0` (see the
+`jib-maven-plugin` configuration in [pom.xml](pom.xml)). It is published as
+`cibseven/cibseven-mcp-restapi` to Docker Hub by the
+[GitHub Actions workflow](.github/workflows/build-and-publish.yml) and to the internal
+Harbor registry by the Jenkins pipeline.
 
 ## Helm chart
 

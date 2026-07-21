@@ -57,6 +57,21 @@
 
     <!-- release-parent's compiler configuration reads version.java -->
     <version.java>17</version.java>
+
+    <jib-maven-plugin.version>3.5.2</jib-maven-plugin.version>
+    <!-- Container base image. Public on purpose: jib bakes the base image's layers into
+         the published image, and this open-source project's image is published to Docker
+         Hub and must be buildable outside CIB's network. Amazon Corretto on Alpine: 0 known
+         OS CVEs at time of writing, actively maintained by AWS, and far cleaner than the
+         Debian-based JRE and distroless options. Corretto 21 runs the Java 17 bytecode fine
+         (the base Java only needs to be at least version.java). The floating tag (no digest)
+         is intentional: each build pulls the latest patched Alpine/Corretto, keeping the CVE
+         surface low without a digest bump (at the cost of byte-for-byte reproducibility). -->
+    <jib.from.image>amazoncorretto:21-alpine</jib.from.image>
+    <!-- Default push target: the internal Harbor registry (used by the Jenkins
+         CREATE_DOCKER_IMAGE stage). The public GitHub Actions build overrides this with
+         -Djib.to.image=docker.io/cibseven/cibseven-mcp-restapi. -->
+    <jib.to.image>harbor.cib.de/dev/cibseven-mcp-restapi:${project.version}</jib.to.image>
   </properties>
 
   <dependencyManagement>
@@ -230,6 +245,35 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+
+      <!-- Builds the container image without a Dockerfile, straight from the compiled
+           classes and dependencies (the standard CIB approach for Spring Boot apps).
+           Pushed to Harbor by the Jenkins pipeline (CREATE_DOCKER_IMAGE) and to Docker Hub
+           by the GitHub Actions release (which overrides jib.to.image). -->
+      <plugin>
+        <groupId>com.google.cloud.tools</groupId>
+        <artifactId>jib-maven-plugin</artifactId>
+        <version>${jib-maven-plugin.version}</version>
+        <configuration>
+          <from>
+            <image>${jib.from.image}</image>
+          </from>
+          <to>
+            <image>${jib.to.image}</image>
+          </to>
+          <container>
+            <mainClass>org.cibseven.mcp.server.CibSevenMcpServerApplication</mainClass>
+            <ports>
+              <port>8080</port>
+            </ports>
+            <!-- Matches the previous Dockerfile's JAVA_OPTS. -->
+            <jvmFlags>
+              <jvmFlag>-XX:MaxRAMPercentage=75.0</jvmFlag>
+            </jvmFlags>
+            <user>1000:1000</user>
+          </container>
+        </configuration>
       </plugin>
 
     </plugins>

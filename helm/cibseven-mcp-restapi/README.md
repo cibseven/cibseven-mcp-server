@@ -10,8 +10,9 @@ which exposes an external CIB seven engine REST API as MCP tools.
 > `cibseven-mcp-server`, so existing deployments that pin the chart by name keep
 > working.
 
-- **Image:** `cibseven/cibseven-mcp-restapi` (built by the repository's
-  `Dockerfile`, published via `.github/workflows/build-and-publish.yml`).
+- **Image:** `cibseven/cibseven-mcp-restapi` (built with jib — no Dockerfile —
+  published to Docker Hub via `.github/workflows/build-and-publish.yml` and to Harbor
+  by the Jenkins pipeline).
 - **Template library:** all Kubernetes objects are produced by the shared CIB
   `common-tpl-lib` chart (`oci://harbor.cib.de/charts`, version `2.7.0`).
 
