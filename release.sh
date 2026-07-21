@@ -17,11 +17,12 @@ if [[ "${VERSION}" != *-SNAPSHOT ]] && docker manifest inspect "${IMAGE}:${VERSI
 fi
 
 # Extra tags beyond the version tag in jib.to.image. "latest" refers to the latest
-# release (never a SNAPSHOT) and is pushed only from main.
-# Uses GITHUB_REF_NAME because git rev-parse returns "HEAD" (detached) on GitHub runners.
+# release and is pushed only when building from a release tag (main only ever holds a
+# -SNAPSHOT, so the released version is published from its tag). GITHUB_REF_TYPE is
+# "tag" or "branch"; the SNAPSHOT guard is belt-and-braces (a release tag is never one).
 tag_args=()
 push_latest=false
-if [ "${GITHUB_REF_NAME}" = "main" ] && [[ "${VERSION}" != *-SNAPSHOT ]]; then
+if [ "${GITHUB_REF_TYPE}" = "tag" ] && [[ "${VERSION}" != *-SNAPSHOT ]]; then
     tag_args=(-Djib.to.tags=latest)
     push_latest=true
 fi
