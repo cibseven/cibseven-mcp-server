@@ -1,0 +1,29 @@
+{
+  "_comment": "Overrides for operations whose required CIB seven authorization the path/method heuristic in OperationAuthorizationRegistry cannot infer correctly. Keyed by OpenAPI operationId. resourceType/resourceName/permissionName mirror org.cibseven.bpm.engine.authorization.Resources and Permissions. Operations not listed here (and not resolvable by the heuristic) are left ungated (fail-open); the engine's own 403 remains the backstop.",
+
+  "startProcessInstance":                 { "resourceName": "ProcessDefinition", "resourceType": 6, "permissionName": "CREATE_INSTANCE" },
+  "startProcessInstanceByKey":            { "resourceName": "ProcessDefinition", "resourceType": 6, "permissionName": "CREATE_INSTANCE" },
+  "startProcessInstanceByKeyAndTenantId": { "resourceName": "ProcessDefinition", "resourceType": 6, "permissionName": "CREATE_INSTANCE" },
+  "submitForm":                           { "resourceName": "ProcessDefinition", "resourceType": 6, "permissionName": "CREATE_INSTANCE" },
+  "submitFormByKey":                      { "resourceName": "ProcessDefinition", "resourceType": 6, "permissionName": "CREATE_INSTANCE" },
+  "submitFormByKeyAndTenantId":           { "resourceName": "ProcessDefinition", "resourceType": 6, "permissionName": "CREATE_INSTANCE" },
+  "restartProcessInstance":               { "resourceName": "ProcessDefinition", "resourceType": 6, "permissionName": "CREATE_INSTANCE" },
+  "restartProcessInstanceAsyncOperation": { "resourceName": "ProcessDefinition", "resourceType": 6, "permissionName": "CREATE_INSTANCE" },
+
+  "complete": { "resourceName": "Task", "resourceType": 7, "permissionName": "TASK_WORK" },
+  "claim":    { "resourceName": "Task", "resourceType": 7, "permissionName": "TASK_WORK" },
+  "unclaim":  { "resourceName": "Task", "resourceType": 7, "permissionName": "TASK_WORK" },
+  "resolve":  { "resourceName": "Task", "resourceType": 7, "permissionName": "TASK_WORK" },
+  "submit":   { "resourceName": "Task", "resourceType": 7, "permissionName": "TASK_WORK" },
+  "delegateTask": { "resourceName": "Task", "resourceType": 7, "permissionName": "TASK_ASSIGN" },
+  "setAssignee":  { "resourceName": "Task", "resourceType": 7, "permissionName": "TASK_ASSIGN" },
+
+  "executeMigrationPlan":      { "resourceName": "ProcessDefinition", "resourceType": 6, "permissionName": "MIGRATE_INSTANCE" },
+  "executeMigrationPlanAsync": { "resourceName": "ProcessDefinition", "resourceType": 6, "permissionName": "MIGRATE_INSTANCE" },
+
+  "deleteHistoricProcessInstance":                            { "resourceName": "ProcessDefinition", "resourceType": 6, "permissionName": "DELETE_HISTORY" },
+  "deleteHistoricProcessInstancesAsync":                      { "resourceName": "ProcessDefinition", "resourceType": 6, "permissionName": "DELETE_HISTORY" },
+  "deleteHistoricVariableInstance":                           { "resourceName": "ProcessDefinition", "resourceType": 6, "permissionName": "DELETE_HISTORY" },
+  "deleteHistoricVariableInstancesOfHistoricProcessInstance": { "resourceName": "ProcessDefinition", "resourceType": 6, "permissionName": "DELETE_HISTORY" },
+  "deleteHistoricBatch": { "resourceName": "Batch", "resourceType": 13, "permissionName": "DELETE_HISTORY" }
+}
