@@ -23,25 +23,31 @@ library. This application contributes only configuration and packaging.
 
 ## Quick start
 
-Run locally against an engine on `localhost:8080` (e.g. a CIB seven Run distribution):
+Run locally against an engine on `localhost:8080` (e.g. a CIB seven Run distribution).
+The engine already occupies port 8080, so start the MCP server on another port:
 
 ```bash
-mvn spring-boot:run
+mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
 ```
 
-Or with Docker:
+Or run the published Docker image:
 
 ```bash
-mvn package
-docker build -t cibseven/cibseven-mcp-restapi .
 docker run -p 8080:8080 \
   -e CIBSEVEN_WEBCLIENT_ENGINEREST_URL=https://my-engine.example.org \
   cibseven/cibseven-mcp-restapi
 ```
 
-Then connect an MCP client to `http://localhost:8080/mcp` (see
+To build the image locally instead (with jib, into the local Docker daemon):
+
+```bash
+mvn package jib:dockerBuild -Djib.to.image=cibseven/cibseven-mcp-restapi
+```
+
+Then connect an MCP client to `http://localhost:8081/mcp` (Maven) or
+`http://localhost:8080/mcp` (Docker) — see
 [Debugging](https://github.com/cibseven/cibseven-mcp-restapi#debugging) in the library
-README), or check health at `http://localhost:8080/actuator/health`.
+README — or check health at `/actuator/health` on the same port.
 
 > Without `spring.security.oauth2.resourceserver.jwt.issuer-uri` the MCP endpoint is
 > **unprotected** — local development only. Never expose an unprotected MCP server.
@@ -67,7 +73,7 @@ details):
 ## Docker image
 
 The image is built with [jib](https://github.com/GoogleContainerTools/jib) — no
-Dockerfile — straight from the compiled classes on top of a public `eclipse-temurin:17-jre`
+Dockerfile — straight from the compiled classes on top of a public `amazoncorretto:21-alpine`
 base, running as a non-root user with `-XX:MaxRAMPercentage=75.0` (see the
 `jib-maven-plugin` configuration in [pom.xml](pom.xml)). It is published as
 `cibseven/cibseven-mcp-restapi` to Docker Hub by the
@@ -94,8 +100,8 @@ no network access is required.
 ## History
 
 This repository started as a fork of the CIB seven getting-started Spring Boot example
-with an embedded engine and demo processes. Since version 1.0.0 it is a lean host
-application for the MCP library only — the engine is expected to run separately.
+with an embedded engine and demo processes. It is now a lean host application for the
+MCP library only — the engine is expected to run separately.
 
 ## License
 

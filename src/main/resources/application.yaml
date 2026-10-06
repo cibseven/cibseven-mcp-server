@@ -58,7 +58,7 @@ cibseven:
     #
     # Example:
     #   openid offline_access
-    #   https://cibseven-showcase.cib.de/mcp/access_as_user
+    #   https://my-mcp.example.org/mcp/access_as_user
     oauth2:
       scopes-supported: ${CIBSEVEN_MCP_OAUTH2_SCOPES_SUPPORTED:}
 
