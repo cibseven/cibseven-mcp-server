@@ -18,10 +18,12 @@ which exposes an external CIB seven engine REST API as MCP tools.
 
 ## Install
 
+The `common-tpl-lib` dependency is not vendored in this repository.
+`helm dependency build` pulls it from `oci://harbor.cib.de/charts`, which requires
+credentials for CIB's Harbor registry; without them the chart cannot be built.
+
 ```bash
-# The common-tpl-lib dependency is vendored under charts/. If you need to
-# refresh it:
-#   helm dependency build
+helm dependency build
 
 helm install my-mcp . \
   --namespace cibseven --create-namespace \
