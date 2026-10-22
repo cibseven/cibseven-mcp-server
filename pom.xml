@@ -119,7 +119,7 @@
     <dependency>
       <groupId>org.cibseven.mcp</groupId>
       <artifactId>cibseven-mcp-restapi</artifactId>
-      <version>0.0.3</version>
+      <version>0.0.5</version>
     </dependency>
 
     <dependency>
