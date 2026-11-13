@@ -52,6 +52,9 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spring-boot.version>4.1.1</spring-boot.version>
+    <!-- Jackson as in CIB seven and cibseven-mcp-restapi: Spring Boot 4.1.1 manages 2.21.5 / 3.1.5 (CVEs) -->
+    <version.jackson>2.21.7</version.jackson>
+    <version.jackson3>3.1.7</version.jackson3>
     <logback.version>1.5.38</logback.version>
 
     <!-- release-parent's compiler configuration reads version.java -->
@@ -75,6 +78,20 @@
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>com.fasterxml.jackson</groupId>
+        <artifactId>jackson-bom</artifactId>
+        <version>${version.jackson}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>tools.jackson</groupId>
+        <artifactId>jackson-bom</artifactId>
+        <version>${version.jackson3}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
@@ -101,8 +118,8 @@
       <!-- Pin transitive versions to resolve DependencyConvergence conflicts.
            (dependencyManagement is not transitive, so the library's own pin
            does not carry over to this consumer.) -->
-      <!-- caffeine wants 2.49.0, guava wants 2.36.0 (both via the restapi
-           library); pin to the newer. -->
+      <!-- caffeine wants 2.49.0, gson (jjwt-gson) wants 2.41.0 (both via the
+           restapi library); pin to the newer. -->
       <dependency>
         <groupId>com.google.errorprone</groupId>
         <artifactId>error_prone_annotations</artifactId>
@@ -119,7 +136,7 @@
     <dependency>
       <groupId>org.cibseven.mcp</groupId>
       <artifactId>cibseven-mcp-restapi</artifactId>
-      <version>0.0.5</version>
+      <version>0.0.6-SNAPSHOT</version>
     </dependency>
 
     <dependency>
@@ -155,15 +172,6 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <!-- swagger-parser needs commons-io only when loading a specification
-         from a file, which only the tests do. -->
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>2.22.0</version>
       <scope>test</scope>
     </dependency>
 
@@ -232,6 +240,27 @@
           <execution>
             <goals>
               <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- *IT tests run against the repackaged jar (PackagedServerIT): only the jar has the
+           runtime classpath of the image; the test classpath also has test dependencies. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>3.5.2</version>
+        <configuration>
+          <systemPropertyVariables>
+            <server.jar>${project.build.directory}/${project.build.finalName}.jar</server.jar>
+          </systemPropertyVariables>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
             </goals>
           </execution>
         </executions>
